@@ -1,0 +1,15 @@
+[package]
+name = "wx-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "WXdown 核心库：公众号会话、文章/合集解析与下载引擎"
+
+[dependencies]
+tokio.workspace = true
+reqwest.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+regex.workspace = true
+futures.workspace = true

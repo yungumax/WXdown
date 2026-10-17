@@ -1,0 +1,28 @@
+# 前端
+node_modules/
+dist/
+
+# Rust
+target/
+
+# 便携 MSVC 工具链（本地链接环境，不入库）
+.lldbin/
+
+# 调试与临时
+*.log
+out/
+tmp/
+.video_agent/
+.dev/samples/
+.dev/*.log
+.dev/*.json
+.dev/*.html
+.dev/*.ts
+
+# 系统杂项
+.DS_Store
+Thumbs.db
+ 
+# ZCode �Ự�ļ� 
+.zcode/ 
+.dev/mitm-marker.txt

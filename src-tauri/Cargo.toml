@@ -1,0 +1,30 @@
+[package]
+name = "wxdown"
+version = "0.1.0"
+edition = "2021"
+description = "WXdown 桌面端"
+license.workspace = true
+
+[lib]
+name = "wxdown_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[features]
+# 打包时必须启用，否则 Tauri 会按开发模式去连 devUrl（http://localhost:5173）
+custom-protocol = ["tauri/custom-protocol"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+tauri-plugin-updater = "2"
+tauri-plugin-process = "2"
+wx-core = { path = "../crates/wx-core" }
+base64 = "0.22"
+regex.workspace = true
+reqwest.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tokio.workspace = true

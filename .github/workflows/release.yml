@@ -1,0 +1,60 @@
+name: Release
+
+# 推送 v* 标签触发：构建 Windows NSIS 安装包 → 私钥签名 →
+# 上传到 GitHub Release（含 .sig 与 latest.json，即应用内自动更新的数据源）
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: 构建并发布（Windows / NSIS 签名更新包）
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 读取 README 作为 Release 正文
+        id: readme
+        shell: bash
+        run: |
+          {
+            echo 'body<<README_EOF'
+            cat README.md
+            echo 'README_EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: 安装 Rust 工具链
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: 安装 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: 安装前端依赖
+        run: npm ci
+
+      - name: 缓存 Cargo 编译产物
+        uses: Swatinem/rust-cache@v2
+
+      # tauri-action：跑 tauri build（自动先 npm run build）、用 Secrets 里的
+      # 私钥签名更新产物、建 Release 并上传 setup.exe / .sig / latest.json
+      - name: 构建并发布
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ""
+        with:
+          tagName: v__VERSION__
+          releaseName: "WXdown v__VERSION__"
+          releaseBody: ${{ steps.readme.outputs.body }}
+          releaseDraft: false
+          prerelease: false
+          includeUpdaterJson: true
+          updaterJsonPreferNsis: true

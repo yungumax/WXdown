@@ -1,0 +1,561 @@
+/* 设计令牌与基础样式。
+   浅色为默认；深色通过 <html data-theme="dark"> 切换（见 app 里的主题处理）。 */
+
+/* 界面字体：钉钉进步体（永久免费商用，见 public/fonts/README.md）。
+   只内置这一款 Regular，声明 100 900 整个字重区间 —— 界面上的粗细交给浏览器合成，
+   免得其它字重的文字落到回退字体、出现两种字形混排。 */
+@font-face {
+  font-family: "DingTalk JinBuTi";
+  src: url("/fonts/dingtalk-jinbuti-regular.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: light;
+
+  --app-bg: #f5f3f4;
+  --side-bg: #fdf2f4;
+  --card: #ffffff;
+  --raised: #faf8f9;
+
+  --line: #eae3dd;
+  --line-soft: #f2ece6;
+
+  /* 四档文字都按正文级对比度取（浅色底 ≥4.5:1）。
+     faint 按**最亮真实底** raised #faf8f9 校准（4.98:1）——
+     按 #74747f 的话在 app-bg/side-bg/raised 上只有 4.18-4.37，全线破线 */
+  --text: #24242a;
+  --muted: #5f5f6a;
+  --faint: #6b6b76;
+
+  /* 主色：小红书红。红色在白底只有 3.9:1，到不了正文线，
+     所以主色当文字色时用深绿 --accent-ink；图标、描边、面用 --accent。 */
+  --accent: #07c160;
+  --accent-dark: #06ad56;
+  --accent-ink: #058a46;
+  --accent-soft: #e8f8ee;
+  --accent-line: #b7eccb;
+
+  --ok: #2fa96f;
+  --err: #e04b42;
+  --warn: #cf8b1f;
+
+  --hover: #f6eef0;
+  --field: #ffffff;
+  --thumb: #f8eef0;
+  --seg-track: #f4eaec;
+  --seg-idle: #cfc6cb;
+  --done-bg: #fbfefc;
+  --done-line: #cfe9dc;
+  --fail-bg: #fdf6f5;
+  --fail-line: #f0d3d0;
+  --scroll: #dcd6d9;
+  --scroll-hover: #c9c2c6;
+  --shade: rgba(43, 24, 28, 0.34);
+
+  --radius-lg: 14px;
+  --radius: 10px;
+  --radius-sm: 8px;
+
+  /* 2026-09-29 用户定稿：整站回微软雅黑——钉钉进步体的新旧字形混排
+     （"渊""频"等字保留旧印刷写法）观感突兀。@font-face 保留（随时可切回：
+     把 "Microsoft YaHei UI" 挪回第一位即可），字体文件也还在 public/fonts。 */
+  --font: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC",
+    "Noto Sans SC", -apple-system, "Segoe UI", system-ui, sans-serif;
+}
+
+/* 深色主题：中性深灰，避免偏色；小红书红强调。
+   两条路径生效：
+   - data-theme="dark"：显式深色
+   - data-theme="system"：跟随系统（配合下方 media query，首帧纯 CSS 生效，不依赖 JS） */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --app-bg: #0f1011;
+  --side-bg: #141517;
+  --card: #17181a;
+  --raised: #1e2022;
+
+  --line: #282a2d;
+  --line-soft: #202224;
+
+  --text: #e8e9ea;
+  --muted: #a2a6ab;
+  --faint: #8b8e93;
+
+  --accent: #07c160;
+  --accent-ink: #4ed88a;
+  --accent-dark: #06ad56;
+  --accent-soft: rgba(7, 193, 96, 0.16);
+  --accent-line: #4d2830;
+
+  --ok: #46c08c;
+  --err: #ec6a62;
+  --warn: #dda93f;
+
+  --hover: #212326;
+  --field: #131416;
+  --thumb: #1c1e20;
+  --seg-track: #202225;
+  --seg-idle: #3d4044;
+  --done-bg: #121a16;
+  --done-line: #26443a;
+  --fail-bg: #1c1515;
+  --fail-line: #452c2c;
+  --scroll: #2f3236;
+  --scroll-hover: #3b3f43;
+  --shade: rgba(4, 5, 6, 0.66);
+}
+
+/* 跟随系统：显式 data-theme="system"、以及属性完全缺失时都走这里。
+   属性缺失是启动期的真实状态（初始化脚本与首帧之间的窗口期），
+   此时若回落到浅色，深色系统上就会看到整页由浅翻深。 */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --app-bg: #0f1011;
+    --side-bg: #141517;
+    --card: #17181a;
+    --raised: #1e2022;
+
+    --line: #282a2d;
+    --line-soft: #202224;
+
+    --text: #e8e9ea;
+    --muted: #a2a6ab;
+    --faint: #8b8e93;
+
+    --accent: #ff2442;
+    --accent-ink: #ff7a8c;
+    --accent-dark: #ff3c58;
+    --accent-soft: rgba(255, 36, 66, 0.16);
+    --accent-line: #4d2830;
+
+    --ok: #46c08c;
+    --err: #ec6a62;
+    --warn: #dda93f;
+
+    --hover: #212326;
+    --field: #131416;
+    --thumb: #1c1e20;
+    --seg-track: #202225;
+    --seg-idle: #3d4044;
+    --done-bg: #121a16;
+    --done-line: #26443a;
+    --fail-bg: #1c1515;
+    --fail-line: #452c2c;
+    --scroll: #2f3236;
+    --scroll-hover: #3b3f43;
+    --shade: rgba(4, 5, 6, 0.66);
+  }
+}
+
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+}
+
+html {
+  background: var(--app-bg);
+}
+
+body {
+  background: var(--app-bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 13.5px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+/* 勾选框：圆角方块 + 白色对勾。
+   原生勾选框的对勾颜色由系统决定，深色下会画出黑勾、和主题不搭，
+   所以关掉原生外观自己画；对勾用两条边框拼出来，不依赖字体或图片。 */
+input[type="checkbox"] {
+  appearance: none;
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 19px;
+  height: 19px;
+  margin: 0;
+  background: var(--field);
+  border: 1.5px solid var(--seg-idle);
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+input[type="checkbox"]:hover:not(:disabled) {
+  border-color: var(--accent-line);
+}
+
+input[type="checkbox"]:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+input[type="checkbox"]:checked::after {
+  content: "";
+  width: 8px;
+  height: 4px;
+  border-left: 2px solid #fff;
+  border-bottom: 2px solid #fff;
+  transform: rotate(-45deg) translate(1px, -1px);
+}
+
+input[type="checkbox"]:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+/* 进度、体积、速度这类跳动的数字用等宽数字，避免抖动 */
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scroll);
+  border: 3px solid transparent;
+  background-clip: content-box;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scroll-hover);
+  background-clip: content-box;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    /* 位移/缩放一律不做，但保留颜色与透明度过渡——
+       状态反馈（悬停、选中）在减少动态下仍要看得见 */
+    transition-property: background-color, border-color, color, opacity, fill, stroke !important;
+  }
+}
+
+/* ============ 动效层 ============
+   全站一套节奏与缓动，避免各组件各用一套时长。
+   关闭方式统一在下面的 prefers-reduced-motion 里（已在文件上方定义）。 */
+:root {
+  --motion-fast: 130ms;
+  --motion: 220ms;
+  --motion-slow: 340ms;
+  --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+  /* 指数缓出：物体是减速停下的，不做回弹（检测器把弹性缓动判为过时） */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes check-pop {
+  0% {
+    transform: scale(0.82);
+  }
+  60% {
+    transform: scale(1.06);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* 空状态编排入场：图标→标题→提示依次浮起（挂载即演，v-if 每次出现都成立） */
+.empty > * {
+  animation: empty-rise 380ms var(--ease-out) both;
+}
+
+.empty > *:nth-child(2) {
+  animation-delay: 60ms;
+}
+
+.empty > *:nth-child(3) {
+  animation-delay: 120ms;
+}
+
+@keyframes empty-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* 弹层条目级联：由 anime.js 驱动（ParsePage/TitleBar 在挂载时逐项 animate）。
+   不用 CSS animation：v-if 重挂载 + 快速开关会让 CSS 动画中断后冻结在
+   半透明（实测 items 停在 0.92/0.82/0.66 不归位）——JS 引擎单管时钟没有这个问题。
+   登录对话框内容编排：复用 empty-rise（内容块依次浮起） */
+.dialog > * {
+  animation: empty-rise 380ms var(--ease-out) both;
+}
+
+.dialog > *:nth-child(2) {
+  animation-delay: 70ms;
+}
+
+.dialog > *:nth-child(3) {
+  animation-delay: 140ms;
+}
+
+/* 步骤条：激活步的标题上浮一下（active 类换到哪步哪步演） */
+.steps li.active .title {
+  animation: step-rise 300ms var(--ease-out);
+}
+
+@keyframes step-rise {
+  from {
+    opacity: 0.4;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* 栏目切换：整页淡入 + 轻微上浮 */
+.page-in {
+  animation: page-in var(--motion) var(--ease-out) both;
+}
+
+/* 弹层/对话框出现 */
+.pop-in {
+  animation: pop-in var(--motion-fast) var(--ease-out) both;
+}
+
+/* 图标旋转：进行中的状态反馈（刷新读取中）。匀速无限转，不占时长 token */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spin {
+  animation: spin 900ms linear infinite;
+}
+
+/* 主按钮悬停光泽：一道浅高光扫过（装饰性，只在悬停那一刻发生一次）。
+   各页面的 .primary 是 scoped 定义，这里用 body 前缀做加法覆盖，
+   只加 position/overflow 与 ::after，不碰它们的配色。 */
+body button.primary {
+  position: relative;
+  overflow: hidden;
+}
+
+body button.primary::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.18) 50%,
+    transparent 60%
+  );
+  transform: translateX(-130%);
+  transition: transform 0.6s var(--ease-out);
+  pointer-events: none;
+}
+
+body button.primary:hover:not(:disabled)::after {
+  transform: translateX(130%);
+}
+
+/* 按钮：悬停/按下的过渡统一，按下给一点位移反馈 */
+button {
+  transition:
+    background var(--motion-fast) var(--ease-out),
+    border-color var(--motion-fast) var(--ease-out),
+    color var(--motion-fast) var(--ease-out),
+    box-shadow var(--motion-fast) var(--ease-out),
+    transform var(--motion-fast) var(--ease-out);
+}
+
+button:not(:disabled):active {
+  transform: translateY(1px) scale(0.995);
+}
+
+/* 勾选框：选中时弹一下 */
+input[type="checkbox"]:checked {
+  animation: check-pop 200ms var(--ease-out-expo);
+}
+
+/* 主题切换：颜色平滑过渡。只在挂载后生效（html.ready），
+   否则启动首帧会从默认配色渐变过来，反而更显眼。
+   注意用 transition-property 逐属性写，不能盖 transition 简写——
+   否则会把 .sidebar 自己的 width 过渡（图标栏切换）顶掉（踩过）。 */
+html.ready body,
+html.ready .sidebar,
+html.ready .titlebar,
+html.ready .card,
+html.ready .content {
+  transition-property: background-color, color, border-color;
+  transition-duration: var(--motion);
+  transition-timing-function: var(--ease-out);
+}
+
+/* 侧栏宽栏↔图标栏的宽度变形：双类名提级，压过上面主题过渡的
+   transition-property（html.ready .sidebar 特异度 0,2,1 < 0,3,0）。
+   放在主题规则之后，同特异性时后写的也赢。 */
+body .sidebar.sidebar {
+  transition-property: width, background-color;
+  transition-duration: var(--motion);
+  transition-timing-function: var(--ease-out-expo);
+}
+
+/* ============ 平面化设计层 ============
+   层次用"面色分层 + 发丝线"表达，不用投影、渐变、模糊。
+   只动观感，不动排版（宽高间距一概不碰）。 */
+
+/* 面色分层：底 → 卡片 → 抬起，三档拉开；深浅两套都成立 */
+body .content .card,
+body .content .results {
+  border-color: var(--line);
+  border-radius: var(--radius);
+}
+
+/* 卡片标题：用字重与字距建立层级，不加装饰 */
+body .content .card > h1 {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+body .content .card > h2,
+body .content .group-title {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* 导航激活态：平色染面（平面化的正确做法），不用描边加重 */
+body .sidebar .nav-item.active {
+  background: var(--accent-soft);
+  border-color: transparent;
+}
+
+body .sidebar .nav-item.active .icon,
+body .sidebar .nav-item.active .label {
+  color: var(--accent-ink);
+}
+
+body .sidebar .nav-item.active .hint {
+  color: var(--muted);
+}
+
+/* 表格：行分隔用发丝线（inset 阴影，不占排版），悬停/选中用平色 */
+body .content .batch-table tbody tr > td {
+  box-shadow: inset 0 -1px 0 var(--line-soft);
+}
+
+body .content .batch-table tbody tr:hover > td {
+  background: var(--hover);
+}
+
+body .content .batch-table thead th {
+  background: var(--card);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* 数字列等宽，读数不跳格 */
+.num,
+.col-idx,
+.col-dur,
+.count,
+.loaded-hint {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/* 主色当文字时用更深一档（红色原色对比度不够） */
+body .content .tabs button.active,
+body .content .kind-tag,
+body .content .group-row .group-kind {
+  color: var(--accent-ink);
+}
+
+/* 浏览器自带界面也从调色板取值：选中高亮、文本光标、键盘聚焦环 */
+::selection {
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+body,
+input,
+textarea {
+  caret-color: var(--accent);
+}
+
+body :focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* 状态变更要"立刻看得见"：快、平、只动颜色与透明度 */
+body .content .batch-table tbody tr > td,
+body .sidebar .nav-item {
+  transition:
+    background var(--motion-fast) var(--ease-out),
+    color var(--motion-fast) var(--ease-out),
+    border-color var(--motion-fast) var(--ease-out);
+}
